@@ -1,0 +1,57 @@
+import networkx as nx
+import matplotlib.pyplot as plt
+
+def draw_rag():
+    num_processes = int(input("Enter the number of processes: "))
+    num_resources = int(input("Enter the number of resource types: "))
+
+    processes = []
+    print("\nEnter the names of the processes:")
+    for i in range(num_processes):
+        processes.append(input(f"Process {i+1}: "))
+
+    print("\nEnter the available resources (space-separated):")
+    avail = list(map(int, input().split()))
+
+    print("\nEnter the maximum need matrix (one row per process, space-separated):")
+    max_need = []
+    for i in range(num_processes):
+        print(f"For process {processes[i]}:")
+        max_need.append(list(map(int, input().split())))
+
+    print("\nEnter the allocation matrix (one row per process, space-separated):")
+    allot = []
+    for i in range(num_processes):
+        print(f"For process {processes[i]}:")
+        allot.append(list(map(int, input().split())))
+
+    G = nx.DiGraph()
+
+    for p in processes:
+        G.add_node(p, color='blue', shape='o')
+
+    for r in range(num_resources):
+        G.add_node(f'R{r}', color='red', shape='s')
+
+    for i, p in enumerate(processes):
+        for j in range(num_resources):
+            if allot[i][j] > 0:
+                G.add_edge(f'R{j}', p, label=f'Alloc {allot[i][j]}')
+
+    for i, p in enumerate(processes):
+        for j in range(num_resources):
+            if max_need[i][j] - allot[i][j] > 0:
+                G.add_edge(p, f'R{j}', label=f'Req {max_need[i][j] - allot[i][j]}')
+
+    pos = nx.spring_layout(G)
+    node_colors = ['blue' if n in processes else 'red' for n in G.nodes]
+
+    nx.draw(G, pos, with_labels=True, node_color=node_colors, node_size=3000, font_size=10, edge_color='black')
+
+    edge_labels = {(u, v): d['label'] for u, v, d in G.edges(data=True)}
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
+
+    plt.title("Resource Allocation Graph (RAG)")
+    plt.show()
+
+draw_rag()
